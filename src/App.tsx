@@ -8,7 +8,6 @@ import CartPage from './components/CartPage';
 import ProfilePage from './components/ProfilePage';
 
 export interface CartItem {
-  cartId: string; // composite key: `${id}_${size||'base'}`
   id: number;
   name: string;
   price: number;
@@ -18,78 +17,108 @@ export interface CartItem {
   extras?: string[];
 }
 
-function App() {
-  const [currentPage, setCurrentPage] = useState('home');
-  const [cart, setCart] = useState<CartItem[]>([]);
+type Page = 'home' | 'menu' | 'detail' | 'cart' | 'profile';
+
+export default function App() {
+  const [currentPage, setCurrentPage] = useState<Page>('home');
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
-
-  const addToCart = (item: Omit<CartItem, 'cartId'>) => {
-    const cartId = `${item.id}_${item.size || 'base'}`;
-    setCart(prev => {
-      const existing = prev.find(i => i.cartId === cartId);
-      if (existing) {
-        return prev.map(i => i.cartId === cartId
-          ? { ...i, quantity: i.quantity + item.quantity }
-          : i
-        );
-      }
-      return [...prev, { ...item, cartId }];
-    });
-  };
-
-  const removeFromCart = (cartId: string) => {
-    setCart(prev => prev.filter(i => i.cartId !== cartId));
-  };
-
-  const updateQuantity = (cartId: string, delta: number) => {
-    setCart(prev => prev
-      .map(i => i.cartId === cartId ? { ...i, quantity: Math.max(1, i.quantity + delta) } : i)
-    );
-  };
-
-  const navigateToDetail = (itemId: number) => {
-    setSelectedItemId(itemId);
-    setCurrentPage('detail');
-  };
+  const [cart, setCart] = useState<CartItem[]>([]);
 
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
 
+  const handleNavigate = (page: string) => {
+    setCurrentPage(page as Page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleItemClick = (id: number) => {
+    setSelectedItemId(id);
+    setCurrentPage('detail');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleAddToCart = (item: CartItem) => {
+    setCart(prev => {
+      const key = `${item.id}-${item.size ?? ''}`;
+      const existing = prev.find(c => `${c.id}-${c.size ?? ''}` === key);
+      if (existing) {
+        return prev.map(c =>
+          `${c.id}-${c.size ?? ''}` === key
+            ? { ...c, quantity: c.quantity + item.quantity }
+            : c
+        );
+      }
+      return [...prev, item];
+    });
+    setCurrentPage('cart');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleUpdateQuantity = (id: number, delta: number) => {
+    setCart(prev =>
+      prev
+        .map(c => c.id === id ? { ...c, quantity: c.quantity + delta } : c)
+        .filter(c => c.quantity > 0)
+    );
+  };
+
+  const handleRemove = (id: number) => {
+    setCart(prev => prev.filter(c => c.id !== id));
+  };
+
   return (
     <div style={{
-      background: COLORS.background,
-      minHeight: '100vh',
       maxWidth: '430px',
       margin: '0 auto',
+      background: COLORS.background,
+      minHeight: '100vh',
       position: 'relative',
-      paddingBottom: '80px',
       overflowX: 'hidden',
     }}>
+      {/* ── PAGE VIEWS ─────────────────────────────────────────────── */}
       {currentPage === 'home' && (
-        <HomePage onNavigate={setCurrentPage} onItemClick={navigateToDetail} />
+        <HomePage
+          onNavigate={handleNavigate}
+          onItemClick={handleItemClick}
+        />
       )}
+
       {currentPage === 'menu' && (
-        <MenuPage onItemClick={navigateToDetail} />
+        <MenuPage
+          onItemClick={handleItemClick}
+        />
       )}
+
       {currentPage === 'detail' && selectedItemId !== null && (
         <DetailPage
           itemId={selectedItemId}
-          onAddToCart={(item) => { addToCart(item); setCurrentPage('cart'); }}
-          onBack={() => setCurrentPage('menu')}
+          onBack={() => {
+            setCurrentPage('menu');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          onAddToCart={handleAddToCart}
         />
       )}
+
       {currentPage === 'cart' && (
-        <CartPage cart={cart} onUpdateQuantity={updateQuantity} onRemove={removeFromCart} onNavigate={setCurrentPage} />
+        <CartPage
+          cart={cart}
+          onUpdateQuantity={handleUpdateQuantity}
+          onRemove={handleRemove}
+          onNavigate={handleNavigate}
+        />
       )}
-      {currentPage === 'orders' && (
-        <div style={{ padding: '80px 24px', textAlign: 'center', color: COLORS.textSecondary }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>📋</div>
-          <p>Nessun ordine attivo</p>
-        </div>
+
+      {currentPage === 'profile' && (
+        <ProfilePage onNavigate={handleNavigate} />
       )}
-      {currentPage === 'profile' && <ProfilePage />}
-      <BottomNav currentPage={currentPage} onNavigate={setCurrentPage} cartCount={cartCount} />
+
+      {/* ── BOTTOM NAV ────────────────────────────────────────────── */}
+      <BottomNav
+        currentPage={currentPage}
+        onNavigate={handleNavigate}
+        cartCount={cartCount}
+      />
     </div>
   );
 }
-
-export default App;

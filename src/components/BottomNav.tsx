@@ -13,30 +13,24 @@ const HomeIcon = () => (
 );
 const MenuIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
+    <path d="M8.1 13.34l2.83-2.83L3.91 3.5c-1.56 1.56-1.56 4.09 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.2-1.1-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L13.41 13l1.47-1.47z"/>
   </svg>
 );
 const CartIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM5.2 4H2v2h2l3.6 7.6-1.4 2.4c-.1.2-.2.5-.2.7 0 1.1.9 2 2 2h12v-2H8.5c-.1 0-.2-.1-.2-.2l.1-.3.9-1.5H17c.8 0 1.4-.4 1.8-1l3.6-6.5c.1-.2.1-.4.1-.5 0-.6-.4-1-1-1H5.2z"/>
-  </svg>
-);
-const OrdersIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+    <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96C5 16.1 6.1 17 7 17h11v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63H15c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0019.5 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
   </svg>
 );
 const ProfileIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
   </svg>
 );
 
-const navItems = [
+const NAV_ITEMS = [
   { id: 'home', label: 'Home', Icon: HomeIcon },
   { id: 'menu', label: 'Menu', Icon: MenuIcon },
   { id: 'cart', label: 'Carrello', Icon: CartIcon },
-  { id: 'orders', label: 'Ordini', Icon: OrdersIcon },
   { id: 'profile', label: 'Profilo', Icon: ProfileIcon },
 ];
 
@@ -53,36 +47,36 @@ export default function BottomNav({ currentPage, onNavigate, cartCount }: Bottom
       borderTop: `1px solid ${COLORS.border}`,
       display: 'flex',
       justifyContent: 'space-around',
-      padding: '10px 0 16px',
+      padding: '10px 0 14px',
       zIndex: 1000,
     }}>
-      {navItems.map(({ id, label, Icon }) => {
+      {NAV_ITEMS.map(({ id, label, Icon }) => {
         const isActive = currentPage === id;
         return (
           <button
             key={id}
             onClick={() => onNavigate(id)}
             style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '4px',
-              color: isActive ? COLORS.primary : COLORS.textMuted,
+              gap: '3px',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: isActive ? COLORS.secondary : COLORS.textMuted,
               position: 'relative',
-              padding: '4px 12px',
-              transition: 'color 0.2s ease',
+              padding: '4px 16px',
+              transition: 'color 0.2s',
             }}
           >
             {isActive && (
               <div style={{
                 position: 'absolute',
-                top: '-6px',
-                width: '36px',
-                height: '36px',
-                background: `radial-gradient(circle, ${COLORS.primary}25 0%, transparent 70%)`,
+                top: '-14px',
+                width: '44px',
+                height: '44px',
+                background: `radial-gradient(circle, ${COLORS.primary}44 0%, transparent 70%)`,
                 borderRadius: '50%',
               }} />
             )}
@@ -91,19 +85,19 @@ export default function BottomNav({ currentPage, onNavigate, cartCount }: Bottom
                 position: 'absolute',
                 top: '0px',
                 right: '8px',
-                background: COLORS.primary,
-                color: COLORS.badgeText,
+                background: COLORS.badge,
+                color: '#fff',
                 borderRadius: '50%',
-                width: '18px',
-                height: '18px',
+                width: '17px',
+                height: '17px',
                 fontSize: '10px',
-                fontWeight: '800',
+                fontWeight: '700',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 zIndex: 1,
               }}>
-                {cartCount}
+                {cartCount > 9 ? '9+' : cartCount}
               </div>
             )}
             <Icon />

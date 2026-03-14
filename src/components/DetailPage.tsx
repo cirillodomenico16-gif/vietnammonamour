@@ -1,257 +1,246 @@
 import { useState } from 'react';
-import { COLORS } from '../config/theme';
+import { COLORS, FONTS } from '../config/theme';
 import { menuItems } from '../data/menuItems';
-import { CartItem } from '../App';
+import type { CartItem } from '../App';
 
 interface DetailPageProps {
   itemId: number;
-  onAddToCart: (item: Omit<CartItem, 'cartId'>) => void;
+  onAddToCart: (item: CartItem) => void;
   onBack: () => void;
 }
 
-const StarIcon = ({ filled = true }: { filled?: boolean }) => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill={filled ? COLORS.star : COLORS.border}>
-    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-  </svg>
-);
-
 export default function DetailPage({ itemId, onAddToCart, onBack }: DetailPageProps) {
   const item = menuItems.find(i => i.id === itemId);
-  const [selectedSize, setSelectedSize] = useState(item?.sizes?.[0]?.name || '');
-  const [selectedToppings, setSelectedToppings] = useState<string[]>([]);
+  const [selectedSize, setSelectedSize] = useState(0);
+  const [selectedToppings, setSelectedToppings] = useState<number[]>([]);
   const [quantity, setQuantity] = useState(1);
 
   if (!item) return null;
 
-  const toppingCost = item.toppings
-    ?.filter(t => selectedToppings.includes(t.name))
-    .reduce((s, t) => s + t.price, 0) || 0;
-  const sizeAdd = item.sizes?.find(s => s.name === selectedSize)?.priceAdd || 0;
-  const unitPrice = item.price + sizeAdd + toppingCost;
+  const sizePrice = item.sizes ? item.sizes[selectedSize].priceAdd : 0;
+  const toppingsPrice = selectedToppings.reduce((sum, idx) => sum + (item.toppings?.[idx]?.price ?? 0), 0);
+  const unitPrice = item.price + sizePrice + toppingsPrice;
   const total = unitPrice * quantity;
 
-  const toggleTopping = (name: string) => {
+  const toggleTopping = (idx: number) => {
     setSelectedToppings(prev =>
-      prev.includes(name) ? prev.filter(t => t !== name) : [...prev, name]
+      prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
     );
   };
 
-  const handleAddToCart = () => {
+  const handleAdd = () => {
     onAddToCart({
       id: item.id,
       name: item.name,
       price: unitPrice,
       quantity,
       image: item.image,
-      size: selectedSize || undefined,
-      extras: selectedToppings.length > 0 ? selectedToppings : undefined,
+      size: item.sizes?.[selectedSize]?.name,
+      extras: selectedToppings.map(i => item.toppings![i].name),
     });
+    onBack();
   };
 
   return (
-    <div style={{ color: COLORS.textPrimary, paddingBottom: '100px' }}>
-      {/* Hero image */}
+    <div style={{ background: COLORS.background, minHeight: '100vh', paddingBottom: '100px' }}>
+
+      {/* ── HERO IMAGE ─────────────────────────────────────────── */}
       <div style={{ position: 'relative', height: '280px' }}>
         <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 40%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(10,0,0,0.85) 100%)' }} />
 
-        {/* Back button */}
         <button
           onClick={onBack}
           style={{
-            position: 'absolute', top: '52px', left: '16px',
-            background: 'rgba(26,8,8,0.8)', border: `1px solid ${COLORS.border}`,
-            borderRadius: '50%', width: '40px', height: '40px',
-            color: COLORS.textPrimary, fontSize: '20px', cursor: 'pointer',
+            position: 'absolute', top: '16px', left: '16px',
+            width: '38px', height: '38px', borderRadius: '50%',
+            background: 'rgba(0,0,0,0.6)', border: 'none',
+            color: '#fff', fontSize: '18px', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            backdropFilter: 'blur(8px)',
           }}
-        >‹</button>
+        >←</button>
 
-        {/* Badges */}
-        <div style={{ position: 'absolute', top: '52px', right: '16px', display: 'flex', gap: '8px' }}>
-          {item.isPopular && (
-            <div style={{ background: COLORS.primary, color: COLORS.badgeText, fontSize: '10px', fontWeight: '800', padding: '4px 10px', borderRadius: '12px' }}>🏆 TOP</div>
-          )}
-          {item.isNew && (
-            <div style={{ background: COLORS.gradientCTA, color: COLORS.badgeText, fontSize: '10px', fontWeight: '800', padding: '4px 10px', borderRadius: '12px' }}>✨ NUOVO</div>
-          )}
+        <div style={{ position: 'absolute', bottom: '16px', left: '16px', right: '16px' }}>
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
+            {item.isPopular && <span style={{ background: COLORS.gradient, color: '#fff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '8px' }}>⭐ POPOLARE</span>}
+            {item.isNew && <span style={{ background: COLORS.gradientGold, color: '#000', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '8px' }}>🆕 NUOVO</span>}
+            {item.isSpicy && <span style={{ background: '#AA2200', color: '#fff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '8px' }}>🌶️ PICCANTE</span>}
+          </div>
+          <div style={{ color: '#fff', fontSize: '24px', fontWeight: '800', fontFamily: FONTS.title, lineHeight: 1.2 }}>{item.name}</div>
+          <div style={{ color: COLORS.secondary, fontSize: '22px', fontWeight: '800', marginTop: '4px' }}>€{item.price.toFixed(2)}</div>
         </div>
       </div>
 
-      {/* Content */}
-      <div style={{ padding: '20px 16px' }}>
-        {/* Title & price */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-          <div>
-            <h1 style={{ fontSize: '24px', fontWeight: '800', color: COLORS.textPrimary, lineHeight: 1.2 }}>{item.name}</h1>
-            <div style={{ fontSize: '13px', color: COLORS.primary, fontWeight: '600', marginTop: '2px' }}>{item.nameViet}</div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '24px', fontWeight: '800', color: COLORS.primary }}>€{item.price.toFixed(2)}</div>
-            <div style={{ fontSize: '11px', color: COLORS.textMuted }}>{item.calories} kcal</div>
-          </div>
+      <div style={{ padding: '16px' }}>
+
+        {/* ── META ───────────────────────────────────────────────── */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+          {[
+            { icon: '★', val: `${item.rating} (${item.reviewCount})`, col: COLORS.star },
+            { icon: '⏱', val: item.prepTime, col: COLORS.textSecondary },
+            { icon: '🔥', val: `${item.calories} kcal`, col: COLORS.textSecondary },
+          ].map(({ icon, val, col }) => (
+            <div key={val} style={{
+              background: COLORS.cardBg, border: `1px solid ${COLORS.border}`,
+              borderRadius: '10px', padding: '6px 12px',
+              display: 'flex', alignItems: 'center', gap: '5px',
+            }}>
+              <span style={{ color: col, fontSize: '12px' }}>{icon}</span>
+              <span style={{ color: col, fontSize: '12px', fontWeight: '600' }}>{val}</span>
+            </div>
+          ))}
         </div>
 
-        {/* Rating & info */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            {[1,2,3,4,5].map(i => <StarIcon key={i} filled={i <= Math.round(item.rating)} />)}
-            <span style={{ fontSize: '13px', color: COLORS.textSecondary, marginLeft: '4px', fontWeight: '600' }}>{item.rating}</span>
-            <span style={{ fontSize: '12px', color: COLORS.textMuted }}>({item.reviewCount})</span>
-          </div>
-          <div style={{ color: COLORS.textMuted, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span>⏱</span><span>{item.prepTime}</span>
-          </div>
-        </div>
-
-        {/* Description */}
-        <p style={{ fontSize: '14px', color: COLORS.textSecondary, lineHeight: '1.6', marginBottom: '20px' }}>
+        {/* ── DESCRIPTION ─────────────────────────────────────────── */}
+        <div style={{ color: COLORS.textSecondary, fontSize: '14px', lineHeight: 1.7, marginBottom: '20px' }}>
           {item.description}
-        </p>
-
-        {/* Allergen badge */}
-        <div style={{
-          background: '#2A1A00', border: '1px solid #5A3A00',
-          borderRadius: '12px', padding: '10px 14px',
-          display: 'flex', alignItems: 'center', gap: '8px',
-          marginBottom: '20px', fontSize: '12px', color: '#D4A017',
-        }}>
-          <span>⚠️</span>
-          <span>Contiene: glutine, soia, pesce. Informaci di allergie.</span>
         </div>
 
-        {/* Size selector */}
-        {item.sizes && item.sizes.length > 0 && (
-          <div style={{ marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '12px', color: COLORS.textPrimary }}>Porzione</h3>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              {item.sizes.map(size => (
-                <button
-                  key={size.name}
-                  onClick={() => setSelectedSize(size.name)}
-                  style={{
-                    flex: 1, padding: '10px',
-                    borderRadius: '12px',
-                    border: `1.5px solid ${selectedSize === size.name ? COLORS.primary : COLORS.border}`,
-                    background: selectedSize === size.name ? `${COLORS.primary}15` : COLORS.cardBg,
-                    color: selectedSize === size.name ? COLORS.primary : COLORS.textSecondary,
-                    fontSize: '13px', fontWeight: selectedSize === size.name ? '700' : '500',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <div>{size.name}</div>
-                  {size.priceAdd > 0 && <div style={{ fontSize: '11px' }}>+€{size.priceAdd.toFixed(2)}</div>}
-                </button>
+        {/* ── ALLERGENS ───────────────────────────────────────────── */}
+        {item.allergens && item.allergens.length > 0 && (
+          <div style={{ marginBottom: '20px', background: COLORS.cardBg, borderRadius: '12px', border: `1px solid ${COLORS.border}`, padding: '12px' }}>
+            <div style={{ color: COLORS.secondary, fontSize: '12px', fontWeight: '700', marginBottom: '6px' }}>⚠️ ALLERGENI</div>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              {item.allergens.map(a => (
+                <span key={a} style={{ background: COLORS.tag, color: COLORS.textSecondary, fontSize: '11px', padding: '3px 9px', borderRadius: '8px' }}>{a}</span>
               ))}
             </div>
           </div>
         )}
 
-        {/* Toppings */}
+        {/* ── SIZES ───────────────────────────────────────────────── */}
+        {item.sizes && (
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ color: COLORS.textPrimary, fontSize: '15px', fontWeight: '700', marginBottom: '10px' }}>Formato</div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {item.sizes.map((size, idx) => {
+                const isActive = selectedSize === idx;
+                const displayPrice = item.price + size.priceAdd;
+                return (
+                  <button
+                    key={size.name}
+                    onClick={() => setSelectedSize(idx)}
+                    style={{
+                      flex: 1,
+                      padding: '10px 6px',
+                      borderRadius: '12px',
+                      border: `2px solid ${isActive ? COLORS.primary : COLORS.border}`,
+                      background: isActive ? COLORS.gradient : COLORS.cardBg,
+                      color: isActive ? '#fff' : COLORS.textSecondary,
+                      cursor: 'pointer',
+                      fontWeight: '600',
+                      fontSize: '12px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div>{size.name}</div>
+                    <div style={{ fontSize: '13px', fontWeight: '700', marginTop: '2px', color: isActive ? COLORS.secondary : COLORS.textMuted }}>
+                      €{displayPrice.toFixed(2)}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── TOPPINGS ────────────────────────────────────────────── */}
         {item.toppings && item.toppings.length > 0 && (
           <div style={{ marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '12px', color: COLORS.textPrimary }}>Aggiunte</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {item.toppings.map(top => (
-                <button
-                  key={top.name}
-                  onClick={() => toggleTopping(top.name)}
+            <div style={{ color: COLORS.textPrimary, fontSize: '15px', fontWeight: '700', marginBottom: '10px' }}>Aggiunte</div>
+            {item.toppings.map((topping, idx) => {
+              const isChecked = selectedToppings.includes(idx);
+              return (
+                <div
+                  key={topping.name}
+                  onClick={() => toggleTopping(idx)}
                   style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '12px 14px',
-                    background: selectedToppings.includes(top.name) ? `${COLORS.primary}15` : COLORS.cardBg,
-                    border: `1.5px solid ${selectedToppings.includes(top.name) ? COLORS.primary : COLORS.border}`,
-                    borderRadius: '12px', cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '12px 0',
+                    borderBottom: `1px solid ${COLORS.border}`,
+                    cursor: 'pointer',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{
-                      width: '20px', height: '20px', borderRadius: '6px',
-                      border: `2px solid ${selectedToppings.includes(top.name) ? COLORS.primary : COLORS.border}`,
-                      background: selectedToppings.includes(top.name) ? COLORS.primary : 'transparent',
+                      width: '22px', height: '22px', borderRadius: '6px',
+                      border: `2px solid ${isChecked ? COLORS.primary : COLORS.border}`,
+                      background: isChecked ? COLORS.gradient : 'transparent',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0,
                     }}>
-                      {selectedToppings.includes(top.name) && <span style={{ color: COLORS.badgeText, fontSize: '12px', fontWeight: '800' }}>✓</span>}
+                      {isChecked && <span style={{ color: '#fff', fontSize: '12px' }}>✓</span>}
                     </div>
-                    <span style={{ fontSize: '14px', color: COLORS.textPrimary }}>{top.name}</span>
+                    <span style={{ color: COLORS.textSecondary, fontSize: '14px' }}>{topping.name}</span>
                   </div>
-                  {top.price > 0 && (
-                    <span style={{ fontSize: '13px', color: COLORS.primary, fontWeight: '700' }}>+€{top.price.toFixed(2)}</span>
-                  )}
-                </button>
-              ))}
-            </div>
+                  <span style={{ color: COLORS.secondary, fontSize: '13px', fontWeight: '600' }}>+€{topping.price.toFixed(2)}</span>
+                </div>
+              );
+            })}
           </div>
         )}
 
-        {/* Reviews */}
-        {item.reviews.length > 0 && (
-          <div>
-            <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '12px', color: COLORS.textPrimary }}>Recensioni</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {item.reviews.slice(0, 2).map((rev, idx) => (
-                <div key={idx} style={{
-                  background: COLORS.cardBg, border: `1px solid ${COLORS.border}`,
-                  borderRadius: '14px', padding: '14px',
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{
-                        width: '32px', height: '32px', borderRadius: '50%',
-                        background: COLORS.gradientCTA,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '14px', fontWeight: '800', color: COLORS.badgeText,
-                      }}>{rev.author[0]}</div>
-                      <span style={{ fontSize: '13px', fontWeight: '700', color: COLORS.textPrimary }}>{rev.author}</span>
-                    </div>
-                    <div style={{ display: 'flex', gap: '2px' }}>
-                      {[1,2,3,4,5].map(i => <StarIcon key={i} filled={i <= rev.rating} />)}
-                    </div>
-                  </div>
-                  <p style={{ fontSize: '13px', color: COLORS.textSecondary, lineHeight: '1.5' }}>{rev.text}</p>
-                  <div style={{ fontSize: '11px', color: COLORS.textMuted, marginTop: '6px' }}>{rev.date}</div>
-                </div>
-              ))}
-            </div>
+        {/* ── REVIEWS ─────────────────────────────────────────────── */}
+        <div style={{ marginBottom: '20px' }}>
+          <div style={{ color: COLORS.textPrimary, fontSize: '15px', fontWeight: '700', marginBottom: '12px' }}>
+            💬 Recensioni ({item.reviewCount})
           </div>
-        )}
+          {item.reviews.map((review, idx) => (
+            <div key={idx} style={{
+              background: COLORS.cardBg,
+              borderRadius: '12px',
+              border: `1px solid ${COLORS.border}`,
+              padding: '12px',
+              marginBottom: '8px',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <div style={{ color: COLORS.textPrimary, fontSize: '13px', fontWeight: '700' }}>{review.author}</div>
+                <div style={{ color: COLORS.textMuted, fontSize: '11px' }}>{review.date}</div>
+              </div>
+              <div style={{ color: COLORS.star, fontSize: '12px', marginBottom: '4px' }}>
+                {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
+              </div>
+              <div style={{ color: COLORS.textSecondary, fontSize: '13px', lineHeight: 1.5 }}>{review.text}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Sticky bottom bar */}
+      {/* ── BOTTOM CTA ──────────────────────────────────────────── */}
       <div style={{
-        position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+        position: 'fixed', bottom: '70px', left: '50%', transform: 'translateX(-50%)',
         maxWidth: '430px', width: '100%',
-        background: COLORS.navBg, borderTop: `1px solid ${COLORS.border}`,
-        padding: '14px 16px 24px',
-        display: 'flex', alignItems: 'center', gap: '14px',
+        padding: '12px 16px',
+        background: `linear-gradient(to top, ${COLORS.background} 70%, transparent)`,
       }}>
-        {/* Quantity */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: '12px',
-          background: COLORS.cardBg, border: `1px solid ${COLORS.border}`,
-          borderRadius: '14px', padding: '8px 14px',
-        }}>
-          <button onClick={() => setQuantity(q => Math.max(1, q - 1))}
-            style={{ background: 'none', border: 'none', color: COLORS.primary, fontSize: '22px', cursor: 'pointer', fontWeight: '700', lineHeight: 1 }}>−</button>
-          <span style={{ fontSize: '16px', fontWeight: '700', minWidth: '20px', textAlign: 'center', color: COLORS.textPrimary }}>{quantity}</span>
-          <button onClick={() => setQuantity(q => q + 1)}
-            style={{ background: 'none', border: 'none', color: COLORS.primary, fontSize: '22px', cursor: 'pointer', fontWeight: '700', lineHeight: 1 }}>+</button>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          {/* Quantity */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '12px',
+            background: COLORS.cardBg, borderRadius: '16px',
+            border: `1px solid ${COLORS.border}`, padding: '10px 14px',
+          }}>
+            <button onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ background: 'none', border: 'none', color: quantity > 1 ? COLORS.primary : COLORS.textMuted, fontSize: '20px', cursor: 'pointer', lineHeight: 1, fontWeight: '700' }}>−</button>
+            <span style={{ color: COLORS.textPrimary, fontSize: '16px', fontWeight: '700', minWidth: '20px', textAlign: 'center' }}>{quantity}</span>
+            <button onClick={() => setQuantity(quantity + 1)} style={{ background: 'none', border: 'none', color: COLORS.primary, fontSize: '20px', cursor: 'pointer', lineHeight: 1, fontWeight: '700' }}>+</button>
+          </div>
+          {/* Add to Cart */}
+          <button
+            onClick={handleAdd}
+            style={{
+              flex: 1, background: COLORS.gradient, color: '#fff',
+              border: 'none', borderRadius: '16px', padding: '14px',
+              fontSize: '15px', fontWeight: '800', cursor: 'pointer',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              paddingLeft: '20px', paddingRight: '20px',
+            }}
+          >
+            <span>Aggiungi</span>
+            <span style={{ color: COLORS.secondary }}>€{total.toFixed(2)}</span>
+          </button>
         </div>
-        {/* CTA */}
-        <button
-          onClick={handleAddToCart}
-          style={{
-            flex: 1, background: COLORS.gradientCTA,
-            border: 'none', borderRadius: '16px',
-            padding: '14px', fontSize: '15px', fontWeight: '800',
-            color: COLORS.badgeText, cursor: 'pointer',
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          }}
-        >
-          <span>Aggiungi al carrello</span>
-          <span>€{total.toFixed(2)}</span>
-        </button>
       </div>
     </div>
   );

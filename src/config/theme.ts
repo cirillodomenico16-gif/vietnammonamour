@@ -1,25 +1,43 @@
 export const COLORS = {
-  background: '#1A0808',
-  cardBg: '#2D1010',
-  cardBgHover: '#3A1414',
-  navBg: '#120505',
-  primary: '#D4AF37',          // Gold
-  primaryDark: '#B8860B',      // Dark gold
-  secondary: '#8B1A1A',        // Crimson
-  secondaryLight: '#A52020',
-  gradientHero: 'linear-gradient(135deg, #8B1A1A 0%, #5A0E0E 100%)',
-  gradientCTA: 'linear-gradient(135deg, #D4AF37 0%, #B8860B 100%)',
-  gradientCard: 'linear-gradient(180deg, transparent 40%, rgba(26,8,8,0.95) 100%)',
-  textPrimary: '#FFF0E0',
-  textSecondary: '#C8A882',
-  textMuted: '#8B7355',
-  border: '#5A1A1A',
-  borderLight: '#7A2A2A',
-  success: '#10B981',
-  warning: '#D4AF37',
-  danger: '#EF4444',
-  star: '#D4AF37',
-  badge: '#D4AF37',
-  badgeText: '#1A0808',
-  overlay: 'rgba(26,8,8,0.85)',
+  // Backgrounds
+  background: '#0A0000',
+  cardBg: '#1A0500',
+  cardBgHover: '#260800',
+  navBg: '#0D0200',
+  inputBg: '#1F0600',
+  modalBg: '#150300',
+
+  // Brand
+  primary: '#CC3300',
+  primaryLight: '#FF4422',
+  primaryDark: '#8B0000',
+  secondary: '#FFD700',
+  secondaryDark: '#CC9900',
+
+  // Gradients
+  gradient: 'linear-gradient(135deg, #8B0000, #CC3300)',
+  gradientHot: 'linear-gradient(135deg, #CC3300, #FF6622)',
+  gradientGold: 'linear-gradient(135deg, #CC9900, #FFD700)',
+  gradientCard: 'linear-gradient(180deg, transparent 0%, rgba(10,0,0,0.95) 100%)',
+
+  // Text
+  textPrimary: '#FFFFFF',
+  textSecondary: '#D4B4A4',
+  textMuted: '#7A5544',
+  textGold: '#FFD700',
+
+  // UI
+  border: '#3A1000',
+  borderLight: '#4A2010',
+  success: '#22CC66',
+  warning: '#FFD700',
+  star: '#FFD700',
+  badge: '#FF2200',
+  open: '#22CC66',
+  tag: '#3A1000',
+};
+
+export const FONTS = {
+  title: "'Georgia', 'Times New Roman', serif",
+  body: "-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
 };
